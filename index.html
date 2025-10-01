@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🐸 Sapo Tracker Enhanced</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#2196F3">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐸</text></svg>">
+    
+    <!-- Enhanced CSS Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            position: relative;
+        }
+        
+        /* Lava lamp background effect */
+        .lava-lamp {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+        }
+        
+        .blob {
+            position: absolute;
+            border-radius: 50%;
+            background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.3), rgba(255, 255, 255, 0.1));
+            animation: float 6s ease-in-out infinite;
+            filter: blur(1px);
+        }
+        
+        .blob:nth-child(1) {
+            width: 200px;
+            height: 200px;
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+            animation-duration: 8s;
+        }
+        
+        .blob:nth-child(2) {
+            width: 300px;
+            height: 300px;
+            top: 70%;
+            right: 10%;
+            animation-delay: 2s;
+            animation-duration: 10s;
+        }
+        
+        .blob:nth-child(3) {
+            width: 150px;
+            height: 150px;
+            bottom: 20%;
+            left: 60%;
+            animation-delay: 4s;
+            animation-duration: 6s;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            25% { transform: translateY(-20px) rotate(90deg); }
+            50% { transform: translateY(-40px) rotate(180deg); }
+            75% { transform: translateY(-20px) rotate(270deg); }
+        }
+        
+        /* Particle system */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            pointer-events: none;
+        }
+        
+        .particle {
+            position: absolute;
+            width: 2px;
+            height: 2px;
+            background: rgba(255, 255, 255, 0.5);
+            border-radius: 50%;
+            animation: particle-float 8s linear infinite;
+        }
+        
+        @keyframes particle-float {
+            0% {
+                transform: translateY(100vh) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-10vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+        
+        /* Glass morphism effect */
+        .glass {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .glass-darker {
+            background: rgba(0, 0, 0, 0.1);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        /* Enhanced mobile optimizations */
+        @media (max-width: 768px) {
+            .lava-lamp .blob {
+                display: none;
+            }
+            
+            .particles .particle {
+                display: none;
+            }
+            
+            body {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            }
+            
+            .glass {
+                backdrop-filter: blur(5px);
+            }
+            
+            .container {
+                padding: 1rem !important;
+                margin: 0.5rem !important;
+            }
+        }
+        
+        /* Security overlay styles */
+        .security-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+        
+        .security-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 400px;
+            width: 90%;
+        }
+        
+        /* Modal styles */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            backdrop-filter: blur(5px);
+        }
+        
+        .modal.show {
+            display: flex;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .modal-content {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 2rem;
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+        
+        .close {
+            position: absolute;
+            right: 1rem;
+            top: 1rem;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+            transition: color 0.3s;
+        }
+        
+        .close:hover {
+            color: #333;
+        }
+        
+        /* Enhanced button styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 10px;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .btn:hover::before {
+            left: 100%;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-success {
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+        
+        .btn-danger {
+            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+            color: white;
+        }
+        
+        .btn-warning {
+            background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+            color: white;
+        }
+        
+        /* Enhanced form styles */
+        .form-group {
+            margin-bottom: 1rem;
+        }
+        
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            transform: translateY(-1px);
+            box-shadow: 0 3px 10px rgba(102, 126, 234, 0.2);
+        }
+        
+        /* Chart container */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 1rem 0;
+        }
+        
+        /* Stats cards */
+        .stat-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1.5rem;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 500;
+        }
+        
+        /* Transaction list */
+        .transaction-item {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-bottom: 0.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .transaction-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateX(5px);
+        }
+        
+        .transaction-income {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .transaction-expense {
+            border-left: 4px solid #f44336;
+        }
+        
+        /* Loading animation */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* Notification styles */
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            z-index: 10000;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            backdrop-filter: blur(10px);
+        }
+        
+        .notification.show {
+            transform: translateX(0);
+        }
+        
+        .notification.success {
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .notification.error {
+            border-left: 4px solid #f44336;
+        }
+        
+        .notification.warning {
+            border-left: 4px solid #ff9800;
+        }
+        
+        /* PWA install button */
+        .pwa-install {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            display: none;
+        }
+        
+        /* Quick action buttons */
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .quick-action {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 15px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            transition: all 0.3s ease;
+            color: white;
+        }
+        
+        .quick-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .quick-action i {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 640px) {
+            .container {
+                padding: 0.5rem;
+            }
+            
+            .modal-content {
+                padding: 1rem;
+                width: 95%;
+            }
+            
+            .quick-actions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+        
+        /* Animation classes */
+        .fade-in {
+            animation: fadeInUp 0.5s ease;
+        }
+        
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- Security Overlay -->
+    <div id="securityOverlay" class="security-overlay">
+        <div class="security-panel">
+            <div id="setupForm" class="text-center">
+                <h2 class="text-2xl font-bold mb-4 text-white">🔒 Setup Sicurezza</h2>
+                <p class="text-white mb-4">Crea una password per proteggere i tuoi dati finanziari</p>
+                <div class="form-group">
+                    <input type="password" id="setupPassword" class="form-input" placeholder="Crea password sicura" minlength="6">
+                </div>
+                <div class="form-group">
+                    <input type="password" id="confirmPassword" class="form-input" placeholder="Conferma password">
+                </div>
+                <button onclick="setupSecurity()" class="btn btn-primary w-full">
+                    <i class="fas fa-shield-alt"></i>
+                    Attiva Protezione
+                </button>
+            </div>
+            
+            <div id="loginForm" class="text-center" style="display: none;">
+                <h2 class="text-2xl font-bold mb-4 text-white">🔐 Login Sicuro</h2>
+                <p class="text-white mb-4">Inserisci la password per accedere</p>
+                <div class="form-group">
+                    <input type="password" id="loginPassword" class="form-input" placeholder="Password">
+                </div>
+                <button onclick="login()" class="btn btn-primary w-full mb-2">
+                    <i class="fas fa-unlock"></i>
+                    Accedi
+                </button>
+                <button onclick="resetApp()" class="btn btn-danger w-full">
+                    <i class="fas fa-trash"></i>
+                    Reset Completo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Background Effects -->
+    <div class="lava-lamp">
+        <div class="blob"></div>
+        <div class="blob"></div>
+        <div class="blob"></div>
+    </div>
+    
+    <div class="particles" id="particles"></div>
+    
+    <!-- PWA Install Button -->
+    <div class="pwa-install" id="pwaInstall">
+        <button onclick="installPWA()" class="btn btn-primary">
+            <i class="fas fa-download"></i>
+            Installa App
+        </button>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="mainApp" style="display: none;">
+        <div class="container mx-auto px-4 py-8">
+            <!-- Header -->
+            <header class="text-center mb-8">
+                <h1 class="text-4xl font-bold text-white mb-2">🐸 Sapo Tracker Enhanced</h1>
+                <p class="text-white opacity-80">Il tuo assistente finanziario intelligente</p>
+                <div class="flex justify-center mt-4 gap-4">
+                    <button onclick="showModal('addIncomeModal')" class="btn btn-success">
+                        <i class="fas fa-plus"></i>
+                        Entrata
+                    </button>
+                    <button onclick="showModal('addExpenseModal')" class="btn btn-danger">
+                        <i class="fas fa-minus"></i>
+                        Uscita
+                    </button>
+                    <button onclick="showModal('quickExpenseModal')" class="btn btn-warning">
+                        <i class="fas fa-bolt"></i>
+                        Spesa Rapida
+                    </button>
+                </div>
+            </header>
+
+            <!-- Stats Dashboard -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="stat-card">
+                    <div class="stat-value" id="totalBalance">€0</div>
+                    <div class="stat-label">Saldo Totale</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="monthlyIncome">€0</div>
+                    <div class="stat-label">Entrate Mensili</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="monthlyExpenses">€0</div>
+                    <div class="stat-label">Uscite Mensili</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-value" id="investmentValue">€0</div>
+                    <div class="stat-label">Investimenti</div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="glass p-6 mb-8 fade-in">
+                <h3 class="text-xl font-bold text-white mb-4">🚀 Azioni Rapide</h3>
+                <div class="quick-actions">
+                    <div class="quick-action" onclick="addQuickTransaction('income', 1000, 'Stipendio')">
+                        <i class="fas fa-money-bill-wave"></i>
+                        Stipendio
+                    </div>
+                    <div class="quick-action" onclick="addQuickTransaction('expense', 50, 'Spesa')">
+                        <i class="fas fa-shopping-cart"></i>
+                        Spesa
+                    </div>
+                    <div class="quick-action" onclick="addQuickTransaction('expense', 30, 'Carburante')">
+                        <i class="fas fa-gas-pump"></i>
+                        Carburante
+                    </div>
+                    <div class="quick-action" onclick="addQuickTransaction('expense', 25, 'Pranzo')">
+                        <i class="fas fa-utensils"></i>
+                        Pranzo
+                    </div>
+                    <div class="quick-action" onclick="showModal('addInvestmentModal')">
+                        <i class="fas fa-chart-line"></i>
+                        Investimento
+                    </div>
+                    <div class="quick-action" onclick="addMaterialGood()">
+                        <i class="fas fa-home"></i>
+                        Bene Materiale
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                <div class="glass p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">📊 Andamento Mensile</h3>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="glass p-6">
+                    <h3 class="text-xl font-bold text-white mb-4">🥧 Distribuzione Spese</h3>
+                    <div class="chart-container">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Transactions List -->
+            <div class="glass p-6 mb-8">
+                <h3 class="text-xl font-bold text-white mb-4">📋 Ultime Transazioni</h3>
+                <div id="transactionsList"></div>
+            </div>
+
+            <!-- Settings & Export -->
+            <div class="glass p-6">
+                <h3 class="text-xl font-bold text-white mb-4">⚙️ Impostazioni</h3>
+                <div class="flex flex-wrap gap-4">
+                    <button onclick="exportData()" class="btn btn-primary">
+                        <i class="fas fa-download"></i>
+                        Esporta Dati
+                    </button>
+                    <button onclick="importData()" class="btn btn-primary">
+                        <i class="fas fa-upload"></i>
+                        Importa Dati
+                    </button>
+                    <button onclick="logout()" class="btn btn-warning">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Income Modal -->
+    <div id="addIncomeModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('addIncomeModal')">&times;</span>
+            <h2 class="text-xl font-bold mb-4">💰 Aggiungi Entrata</h2>
+            <form onsubmit="addTransaction(event, 'income')">
+                <div class="form-group">
+                    <label class="form-label">Importo (€)</label>
+                    <input type="number" step="0.01" required class="form-input" name="amount" placeholder="100.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrizione</label>
+                    <input type="text" required class="form-input" name="description" placeholder="Stipendio, freelance, etc.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-input" name="category">
+                        <option value="stipendio">Stipendio</option>
+                        <option value="freelance">Freelance</option>
+                        <option value="investimenti">Investimenti</option>
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data</label>
+                    <input type="date" class="form-input" name="date">
+                </div>
+                <button type="submit" class="btn btn-success w-full">
+                    <i class="fas fa-save"></i>
+                    Salva Entrata
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="addExpenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('addExpenseModal')">&times;</span>
+            <h2 class="text-xl font-bold mb-4">💸 Aggiungi Uscita</h2>
+            <form onsubmit="addTransaction(event, 'expense')">
+                <div class="form-group">
+                    <label class="form-label">Importo (€)</label>
+                    <input type="number" step="0.01" required class="form-input" name="amount" placeholder="50.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrizione</label>
+                    <input type="text" required class="form-input" name="description" placeholder="Spesa, bolletta, etc.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Categoria</label>
+                    <select class="form-input" name="category">
+                        <option value="alimentari">Alimentari</option>
+                        <option value="trasporti">Trasporti</option>
+                        <option value="bollette">Bollette</option>
+                        <option value="svago">Svago</option>
+                        <option value="salute">Salute</option>
+                        <option value="abbigliamento">Abbigliamento</option>
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Data</label>
+                    <input type="date" class="form-input" name="date">
+                </div>
+                <button type="submit" class="btn btn-danger w-full">
+                    <i class="fas fa-save"></i>
+                    Salva Uscita
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Quick Expense Modal -->
+    <div id="quickExpenseModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('quickExpenseModal')">&times;</span>
+            <h2 class="text-xl font-bold mb-4">⚡ Spesa Rapida</h2>
+            <form onsubmit="addTransaction(event, 'expense', true)">
+                <div class="form-group">
+                    <label class="form-label">Importo (€)</label>
+                    <input type="number" step="0.01" required class="form-input" name="amount" placeholder="25.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Descrizione Breve</label>
+                    <input type="text" required class="form-input" name="description" placeholder="Caffè, parcheggio, etc.">
+                </div>
+                <button type="submit" class="btn btn-warning w-full">
+                    <i class="fas fa-bolt"></i>
+                    Aggiungi Rapidamente
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add Investment Modal -->
+    <div id="addInvestmentModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="hideModal('addInvestmentModal')">&times;</span>
+            <h2 class="text-xl font-bold mb-4">📈 Aggiungi Investimento</h2>
+            <form onsubmit="addInvestment(event)">
+                <div class="form-group">
+                    <label class="form-label">Nome Investimento</label>
+                    <input type="text" required class="form-input" name="name" placeholder="Bitcoin, Azioni Apple, etc.">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Importo Investito (€)</label>
+                    <input type="number" step="0.01" required class="form-input" name="amount" placeholder="1000.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Valore Attuale (€)</label>
+                    <input type="number" step="0.01" required class="form-input" name="currentValue" placeholder="1100.00">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Tipo</label>
+                    <select class="form-input" name="type">
+                        <option value="azioni">Azioni</option>
+                        <option value="crypto">Criptovalute</option>
+                        <option value="etf">ETF</option>
+                        <option value="obbligazioni">Obbligazioni</option>
+                        <option value="altro">Altro</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-success w-full">
+                    <i class="fas fa-chart-line"></i>
+                    Salva Investimento
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 9999; display: flex; align-items: center; justify-content: center;">
+        <div class="loading"></div>
+    </div>
+
+    <!-- App JavaScript -->
+    <script src="js/app.js"></script>
+    
+    <script>
+        // Security Manager Class
+        class SecurityManager {
+            constructor() {
+                console.log('🔒 Inizializzazione sistema sicurezza...');
+                this.isSetup = localStorage.getItem('sapo_security_setup') === 'true';
+                this.init();
+            }
+            
+            init() {
+                if (this.isSetup) {
+                    this.showLogin();
+                } else {
+                    this.showSetup();
+                }
+            }
+            
+            showSetup() {
+                document.getElementById('setupForm').style.display = 'block';
+                document.getElementById('loginForm').style.display = 'none';
+            }
+            
+            showLogin() {
+                document.getElementById('setupForm').style.display = 'none';
+                document.getElementById('loginForm').style.display = 'block';
+            }
+            
+            async setupSecurity() {
+                const password = document.getElementById('setupPassword').value;
+                const confirm = document.getElementById('confirmPassword').value;
+                
+                if (password.length < 6) {
+                    this.showNotification('La password deve essere almeno 6 caratteri', 'error');
+                    return false;
+                }
+                
+                if (password !== confirm) {
+                    this.showNotification('Le password non coincidono', 'error');
+                    return false;
+                }
+                
+                try {
+                    const hashedPassword = CryptoJS.SHA256(password).toString();
+                    localStorage.setItem('sapo_security_hash', hashedPassword);
+                    localStorage.setItem('sapo_security_setup', 'true');
+                    
+                    this.showNotification('🔒 Sicurezza attivata con successo!', 'success');
+                    this.login();
+                    return true;
+                } catch (error) {
+                    console.error('❌ Errore setup sicurezza:', error);
+                    this.showNotification('Errore nel setup della sicurezza', 'error');
+                    return false;
+                }
+            }
+            
+            async login() {
+                try {
+                    let password;
+                    if (document.getElementById('loginPassword')) {
+                        password = document.getElementById('loginPassword').value;
+                    } else {
+                        password = document.getElementById('setupPassword').value;
+                    }
+                    
+                    const hashedPassword = CryptoJS.SHA256(password).toString();
+                    const storedHash = localStorage.getItem('sapo_security_hash');
+                    
+                    if (hashedPassword === storedHash) {
+                        console.log('🔓 Login successful');
+                        localStorage.setItem('sapo_session_key', hashedPassword);
+                        this.hideSecurityOverlay();
+                        
+                        // Initialize the main app
+                        if (typeof window.initializeFinanceApp === 'function') {
+                            console.log('🚀 Inizializzando app...');
+                            window.initializeFinanceApp();
+                        } else {
+                            console.error('❌ Function initializeFinanceApp not found');
+                        }
+                        
+                        this.showNotification('🎉 Accesso effettuato!', 'success');
+                        return true;
+                    } else {
+                        this.showNotification('❌ Password errata', 'error');
+                        return false;
+                    }
+                } catch (error) {
+                    console.error('❌ Errore login:', error);
+                    this.showNotification('Errore durante il login', 'error');
+                    return false;
+                }
+            }
+            
+            logout() {
+                localStorage.removeItem('sapo_session_key');
+                location.reload();
+            }
+            
+            resetApp() {
+                if (confirm('⚠️ Questo cancellerà TUTTI i dati. Continuare?')) {
+                    localStorage.clear();
+                    location.reload();
+                }
+            }
+            
+            hideSecurityOverlay() {
+                document.getElementById('securityOverlay').style.display = 'none';
+                document.getElementById('mainApp').style.display = 'block';
+            }
+            
+            showNotification(message, type = 'info') {
+                const notification = document.createElement('div');
+                notification.className = `notification ${type} show`;
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'}"></i>
+                        <span>${message}</span>
+                    </div>
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.classList.remove('show');
+                    setTimeout(() => {
+                        document.body.removeChild(notification);
+                    }, 300);
+                }, 3000);
+            }
+        }
+        
+        // PWA Manager Class
+        class PWAManager {
+            constructor() {
+                console.log('📱 Inizializzazione PWA Manager...');
+                this.deferredPrompt = null;
+                this.init();
+            }
+            
+            init() {
+                // Register service worker
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('sw.js')
+                        .then(registration => console.log('✅ SW registrato:', registration.scope))
+                        .catch(error => console.log('❌ SW registration failed:', error));
+                }
+                
+                // Handle install prompt
+                window.addEventListener('beforeinstallprompt', (e) => {
+                    e.preventDefault();
+                    this.deferredPrompt = e;
+                    this.showInstallButton();
+                });
+                
+                // Handle successful install
+                window.addEventListener('appinstalled', () => {
+                    console.log('✅ PWA installata con successo!');
+                    this.hideInstallButton();
+                });
+            }
+            
+            showInstallButton() {
+                document.getElementById('pwaInstall').style.display = 'block';
+            }
+            
+            hideInstallButton() {
+                document.getElementById('pwaInstall').style.display = 'none';
+            }
+            
+            async installPWA() {
+                if (!this.deferredPrompt) {
+                    console.log('❌ Install prompt non disponibile');
+                    return;
+                }
+                
+                this.deferredPrompt.prompt();
+                const result = await this.deferredPrompt.userChoice;
+                
+                if (result.outcome === 'accepted') {
+                    console.log('✅ Utente ha accettato l\'installazione');
+                } else {
+                    console.log('❌ Utente ha rifiutato l\'installazione');
+                }
+                
+                this.deferredPrompt = null;
+            }
+        }
+        
+        // Gesture Manager Class
+        class GestureManager {
+            constructor() {
+                this.touchStartX = 0;
+                this.touchStartY = 0;
+                this.touchEndX = 0;
+                this.touchEndY = 0;
+                this.init();
+            }
+            
+            init() {
+                document.addEventListener('touchstart', (e) => {
+                    this.touchStartX = e.changedTouches[0].screenX;
+                    this.touchStartY = e.changedTouches[0].screenY;
+                }, { passive: true });
+                
+                document.addEventListener('touchend', (e) => {
+                    this.touchEndX = e.changedTouches[0].screenX;
+                    this.touchEndY = e.changedTouches[0].screenY;
+                    this.handleSwipe();
+                }, { passive: true });
+            }
+            
+            handleSwipe() {
+                const deltaX = this.touchEndX - this.touchStartX;
+                const deltaY = this.touchEndY - this.touchStartY;
+                const minSwipeDistance = 50;
+                
+                if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > minSwipeDistance) {
+                    if (deltaX > 0) {
+                        console.log('👉 Swipe destro');
+                        // Add swipe right action
+                    } else {
+                        console.log('👈 Swipe sinistro');
+                        // Add swipe left action
+                    }
+                }
+            }
+        }
+        
+        // Mobile Optimizer
+        class MobileOptimizer {
+            constructor() {
+                this.init();
+            }
+            
+            init() {
+                if (this.isMobileDevice()) {
+                    this.optimizeForMobile();
+                }
+                
+                if (this.isLowEndDevice()) {
+                    this.disableAnimations();
+                }
+            }
+            
+            isMobileDevice() {
+                return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            }
+            
+            isLowEndDevice() {
+                return navigator.hardwareConcurrency <= 4 || navigator.deviceMemory <= 4;
+            }
+            
+            optimizeForMobile() {
+                // Add mobile-specific optimizations
+                document.body.classList.add('mobile-optimized');
+            }
+            
+            disableAnimations() {
+                const style = document.createElement('style');
+                style.textContent = `
+                    *, *::before, *::after {
+                        animation-duration: 0.01ms !important;
+                        animation-iteration-count: 1 !important;
+                        transition-duration: 0.01ms !important;
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+        }
+        
+        // Global function definitions (called by HTML)
+        window.setupSecurity = function() {
+            console.log('📝 Setup form submitted');
+            return window.securityManager.setupSecurity();
+        };
+        
+        window.login = function() {
+            console.log('🔐 Login form submitted');
+            return window.securityManager.login();
+        };
+        
+        window.logout = function() {
+            return window.securityManager.logout();
+        };
+        
+        window.resetApp = function() {
+            return window.securityManager.resetApp();
+        };
+        
+        window.installPWA = function() {
+            return window.pwaManager.installPWA();
+        };
+        
+        // Initialize on DOM load
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('🔒 DOM loaded, in attesa di autenticazione...');
+            
+            // Initialize particle system
+            initParticles();
+            
+            // Initialize managers
+            window.securityManager = new SecurityManager();
+            window.pwaManager = new PWAManager();
+            window.gestureManager = new GestureManager();
+            window.mobileOptimizer = new MobileOptimizer();
+            
+            console.log('🚀 Sistema Enhanced pronto!');
+        });
+        
+        // Particle system
+        function initParticles() {
+            const particlesContainer = document.getElementById('particles');
+            const particleCount = window.innerWidth < 768 ? 20 : 50;
+            
+            for (let i = 0; i < particleCount; i++) {
+                setTimeout(() => {
+                    createParticle(particlesContainer);
+                }, i * 100);
+            }
+            
+            setInterval(() => {
+                if (particlesContainer.children.length < particleCount) {
+                    createParticle(particlesContainer);
+                }
+            }, 1000);
+        }
+        
+        function createParticle(container) {
+            const particle = document.createElement('div');
+            particle.className = 'particle';
+            particle.style.left = Math.random() * 100 + '%';
+            particle.style.animationDelay = Math.random() * 8 + 's';
+            particle.style.animationDuration = (8 + Math.random() * 4) + 's';
+            
+            container.appendChild(particle);
+            
+            particle.addEventListener('animationend', () => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            });
+        }
+        
+        console.log('🎮 Enhanced system loaded successfully!');
+    </script>
+</body>
+</html>
